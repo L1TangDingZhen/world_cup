@@ -5,4 +5,7 @@ dependencies:
   - python=3.12
   - pip
   - pip:
-      - -e .[dev]
+      # bayes pulls in PyMC + ArviZ for the hierarchical model.
+      # GPU support is installed separately: first the PyTorch CUDA wheel
+      # matching the local driver, then `pip install -e ".[gpu]"`.
+      - -e .[dev,bayes]

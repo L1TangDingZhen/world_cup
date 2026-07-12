@@ -53,17 +53,6 @@ class GroupMatch:
     away_fair_play: int = 0
 
 
-def ranking_key(standing: GroupStanding) -> tuple[int, int, int, int, int, str]:
-    return (
-        standing.points,
-        standing.goal_difference,
-        standing.goals_for,
-        standing.fair_play_score,
-        -standing.fifa_ranking,
-        standing.team,
-    )
-
-
 def _mini_table(
     teams: set[str],
     matches: Iterable[GroupMatch],

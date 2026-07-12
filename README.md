@@ -41,7 +41,7 @@ The project uses a dedicated Conda environment named `WC`:
 
 ```bash
 conda activate WC
-python -m pip install -e ".[dev]"
+python -m pip install -e ".[dev,bayes]"
 ```
 
 Or rebuild it from the environment file:
@@ -49,6 +49,11 @@ Or rebuild it from the environment file:
 ```bash
 conda env create -f environment.yml
 ```
+
+Optional extras: `dev` (pytest), `bayes` (PyMC + ArviZ for the hierarchical
+model), `gpu` (PyTorch; see the CPU/GPU section below for the CUDA wheel).
+Everything except the Bayesian model and GPU acceleration works with just the
+base dependencies.
 
 ## CPU / GPU compute
 
@@ -212,7 +217,7 @@ docker compose up --build
 | 3 | Backtest + RPS + calibration | Done |
 | 4 | World Cup simulator | Done |
 | 5 | Parquet processed data | Done |
-| 6 | PostgreSQL schema / storage | Done |
+| 6 | PostgreSQL schema / storage | Storage layer, schema and tests done; the serving path (API / dynamic updates) persists to JSON/CSV files and is not wired to PostgreSQL yet — only the API-Football player sync writes to the database |
 | 7 | FastAPI | Done |
 | 8 | Streamlit dashboard | Done |
 | 9 | Celery + Redis dynamic updates | Workflow, fixture updates, remaining-fixture re-prediction and Celery task done |
@@ -220,6 +225,24 @@ docker compose up --build
 | 11 | PyMC Bayesian upgrade | Empirical-Bayes and PyMC MCMC hierarchical models with posterior-sample prediction intervals done |
 | 12 | Player-level extension | CSV and API-Football sync, PostgreSQL persistence, injury/lineup/rating updates and the team+player hybrid predictor done |
 | 13 | Docker / docker-compose / README | Done |
+
+## Experimental modules
+
+The following modules are research experiments kept alongside the main
+pipeline. They are **not** wired into the CLI simulation, API or dashboard
+serving paths, and none of them has (yet) demonstrated a backtest advantage
+over the main Elo-Poisson line:
+
+- `ratings/v2.py` + `models/rating_v2_poisson.py` — a Glicko-style rating
+  with per-team uncertainty and recent-form terms; pending a fair backtest
+  comparison against the production Elo.
+- `models/neural_outcome.py` — a neural win/draw/loss classifier used purely
+  as a comparison baseline (the main line always stays a score-distribution
+  model).
+- `models/tournament_value.py` + `workflows/distilled_value.py` — a value
+  network distilled from a single simulator snapshot; it reproduces that one
+  snapshot almost exactly, so it is functionally a cached lookup and serves
+  only as a GPU-training exercise.
 
 ## Data notes
 
@@ -271,7 +294,7 @@ from FIFA Regulations Annexe C into
 
 ```bash
 conda activate WC
-python -m pip install -e ".[dev]"
+python -m pip install -e ".[dev,bayes]"
 ```
 
 也可以从环境文件重建：
@@ -279,6 +302,10 @@ python -m pip install -e ".[dev]"
 ```bash
 conda env create -f environment.yml
 ```
+
+可选依赖组：`dev`（pytest）、`bayes`（PyMC + ArviZ，层级贝叶斯模型用）、
+`gpu`（PyTorch，CUDA wheel 安装见下方 CPU/GPU 一节）。除贝叶斯模型和 GPU
+加速外，其余功能只需基础依赖即可运行。
 
 ## CPU / GPU 计算
 
@@ -430,7 +457,7 @@ docker compose up --build
 | 3 | Backtest + RPS + calibration | 完成 |
 | 4 | 世界杯模拟器 | 完成 |
 | 5 | Parquet 固化 processed data | 完成 |
-| 6 | PostgreSQL schema / storage | 完成 |
+| 6 | PostgreSQL schema / storage | 存储层、schema 和测试完成；服务链路（API / 动态更新）仍以 JSON/CSV 持久化，尚未接入 PostgreSQL——目前只有 API-Football 球员同步写库 |
 | 7 | FastAPI | 完成 |
 | 8 | Streamlit dashboard | 完成 |
 | 9 | Celery + Redis 动态更新 | 完成 workflow、fixture 更新、剩余赛程重预测和 Celery task |
@@ -438,6 +465,19 @@ docker compose up --build
 | 11 | PyMC 贝叶斯升级 | 完成 Empirical-Bayes 与 PyMC MCMC 层级模型、后验抽样预测区间 |
 | 12 | 球员级扩展 | 完成 CSV 与 API-Football 同步、PostgreSQL 落库、伤病/首发/评分更新和 team+player hybrid predictor |
 | 13 | Docker / docker-compose / README | 完成 |
+
+## 实验模块
+
+以下模块是与主线并存的研究性实验，**没有**接入 CLI 模拟、API 或 dashboard
+服务链路，也都尚未在回测中证明优于主线 Elo-泊松：
+
+- `ratings/v2.py` + `models/rating_v2_poisson.py`——Glicko 风格评分，带
+  每队不确定度与近期状态项；还欠一场与生产 Elo 的公平回测对照。
+- `models/neural_outcome.py`——神经网络胜平负分类器，仅作对照基线（主线
+  始终是比分分布模型）。
+- `models/tournament_value.py` + `workflows/distilled_value.py`——从单次
+  模拟器快照蒸馏出的价值网络；它几乎精确复现那一份快照，功能上等价于
+  缓存查表，仅作为 GPU 训练练习保留。
 
 ## 数据说明
 

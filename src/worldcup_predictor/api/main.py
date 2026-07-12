@@ -56,7 +56,9 @@ class MatchResultRequest(BaseModel):
     home_goals: int = Field(ge=0)
     away_goals: int = Field(ge=0)
     competition_type: str = "FIFA World Cup"
-    neutral_venue: bool = True
+    # No default: host-nation matches are not neutral, so the caller must be
+    # explicit or the Elo update quietly uses the wrong venue.
+    neutral_venue: bool
     # The refit uses this file as the FULL training set, so it must be the
     # complete match history, not a side file with a handful of results.
     matches_path: str = "data/raw/international_results.csv"

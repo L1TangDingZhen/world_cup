@@ -1,50 +1,49 @@
-group,team
-A,Mexico
-A,South Africa
-A,South Korea
-A,Czech Republic
-B,Canada
-B,Bosnia and Herzegovina
-B,Qatar
-B,Switzerland
-C,Brazil
-C,Morocco
-C,Haiti
-C,Scotland
-D,United States
-D,Paraguay
-D,Australia
-D,Turkey
-E,Germany
-E,Curaçao
-E,Ivory Coast
-E,Ecuador
-F,Netherlands
-F,Japan
-F,Sweden
-F,Tunisia
-G,Belgium
-G,Egypt
-G,Iran
-G,New Zealand
-H,Spain
-H,Cape Verde
-H,Saudi Arabia
-H,Uruguay
-I,France
-I,Senegal
-I,Iraq
-I,Norway
-J,Argentina
-J,Algeria
-J,Austria
-J,Jordan
-K,Portugal
-K,DR Congo
-K,Uzbekistan
-K,Colombia
-L,England
-L,Croatia
-L,Ghana
-L,Panama
-
+group,team,fifa_ranking
+A,Mexico,14
+A,South Africa,60
+A,South Korea,25
+A,Czech Republic,40
+B,Canada,30
+B,Bosnia and Herzegovina,64
+B,Qatar,56
+B,Switzerland,19
+C,Brazil,6
+C,Morocco,7
+C,Haiti,83
+C,Scotland,42
+D,United States,17
+D,Paraguay,41
+D,Australia,27
+D,Turkey,22
+E,Germany,10
+E,Curaçao,82
+E,Ivory Coast,33
+E,Ecuador,23
+F,Netherlands,8
+F,Japan,18
+F,Sweden,38
+F,Tunisia,45
+G,Belgium,9
+G,Egypt,29
+G,Iran,20
+G,New Zealand,85
+H,Spain,2
+H,Cape Verde,67
+H,Saudi Arabia,61
+H,Uruguay,16
+I,France,3
+I,Senegal,15
+I,Iraq,57
+I,Norway,31
+J,Argentina,1
+J,Algeria,28
+J,Austria,24
+J,Jordan,63
+K,Portugal,5
+K,DR Congo,46
+K,Uzbekistan,50
+K,Colombia,13
+L,England,4
+L,Croatia,11
+L,Ghana,73
+L,Panama,34

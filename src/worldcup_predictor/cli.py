@@ -450,7 +450,13 @@ def _build_parser() -> argparse.ArgumentParser:
     dynamic.add_argument("--home-goals", required=True, type=int)
     dynamic.add_argument("--away-goals", required=True, type=int)
     dynamic.add_argument("--competition-type", default="FIFA World Cup")
-    dynamic.add_argument("--neutral", action="store_true", default=True)
+    dynamic.add_argument(
+        "--neutral",
+        action=argparse.BooleanOptionalAction,
+        required=True,
+        help="Pass --neutral or --no-neutral explicitly; host-nation matches "
+        "are not neutral.",
+    )
     dynamic.add_argument("--model-output", type=Path, default=Path("models/elo_poisson_current.json"))
     dynamic.add_argument("--simulation-output", type=Path, default=Path("data/processed/simulation_2026.csv"))
     dynamic.add_argument("--predictions-output", type=Path, default=Path("data/processed/remaining_predictions.csv"))

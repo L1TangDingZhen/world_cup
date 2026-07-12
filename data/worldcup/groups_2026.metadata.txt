@@ -1,0 +1,4 @@
+fifa_ranking column: FIFA/Coca-Cola Men's World Ranking, official edition of
+2026-06-11 (the last edition published before the tournament; the next update
+is scheduled for 2026-07-20). Used only as the last-resort tie-breaker in
+group ranking and third-place ranking, standing in for FIFA's drawing of lots.
