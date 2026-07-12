@@ -1,0 +1,12 @@
+team,player,attacking_rating,defensive_rating,available
+Atlas,A Forward,88,62,true
+Atlas,A Mid,82,78,true
+Atlas,A Defender,62,86,true
+Comet,C Forward,72,58,true
+Comet,C Mid,70,70,true
+Comet,C Defender,55,76,true
+Boreal,B Forward,64,60,true
+Boreal,B Defender,50,72,false
+Draco,D Forward,60,55,true
+Draco,D Defender,52,68,true
+

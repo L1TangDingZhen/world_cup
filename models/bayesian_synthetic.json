@@ -1,0 +1,31 @@
+{
+  "attack": {
+    "Atlas": 0.3103849624945098,
+    "Boreal": -0.19708121707165638,
+    "Comet": 0.06206715508025557,
+    "Draco": -0.175370900503109
+  },
+  "defense": {
+    "Atlas": -0.5833581007730717,
+    "Boreal": 0.243669833041729,
+    "Comet": 0.06898020165505973,
+    "Draco": 0.27070806607628295
+  },
+  "home_advantage": 0.12357686481019378,
+  "intercept": 0.03794171870060904,
+  "model_config": {
+    "max_goals": 10,
+    "time_decay_half_life_days": 1095.0
+  },
+  "model_version": "bayesian_hierarchical_v1",
+  "posterior_draws": 30,
+  "posterior_sd": 0.225,
+  "prior_sd": 0.45,
+  "teams": [
+    "Atlas",
+    "Boreal",
+    "Comet",
+    "Draco"
+  ],
+  "trained_through": "2025-10-15"
+}

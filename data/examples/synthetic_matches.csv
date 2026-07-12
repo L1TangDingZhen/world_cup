@@ -1,0 +1,20 @@
+date,home_team,away_team,home_goals,away_goals,competition_type,neutral_venue
+2024-01-10,Atlas,Boreal,2,0,Friendly,false
+2024-02-14,Comet,Draco,1,1,Friendly,true
+2024-03-20,Boreal,Comet,0,1,World Cup Qualifier,false
+2024-04-18,Draco,Atlas,1,3,World Cup Qualifier,true
+2024-06-02,Atlas,Comet,2,1,Continental Championship,true
+2024-06-08,Boreal,Draco,1,0,Continental Championship,true
+2024-09-05,Comet,Atlas,0,2,World Cup Qualifier,false
+2024-09-10,Draco,Boreal,2,2,World Cup Qualifier,false
+2024-10-11,Atlas,Draco,1,0,World Cup Qualifier,false
+2024-10-16,Comet,Boreal,3,1,World Cup Qualifier,false
+2025-03-21,Boreal,Atlas,0,2,World Cup Qualifier,false
+2025-03-26,Draco,Comet,1,2,World Cup Qualifier,false
+2025-06-05,Atlas,Boreal,3,0,Friendly,false
+2025-06-09,Comet,Draco,2,1,Friendly,true
+2025-09-04,Boreal,Comet,1,1,World Cup Qualifier,false
+2025-09-09,Draco,Atlas,0,1,World Cup Qualifier,true
+2025-10-10,Atlas,Comet,2,0,World Cup Qualifier,false
+2025-10-15,Boreal,Draco,2,1,World Cup Qualifier,false
+

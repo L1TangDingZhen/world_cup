@@ -1,0 +1,8 @@
+{
+  "bytes": 3724335,
+  "downloaded_at": "2026-06-20T14:35:41.884733+00:00",
+  "license": "CC0-1.0",
+  "output": "data/raw/international_results_latest.csv",
+  "sha256": "dacd6dcf2ae54a9ada1dcdac4d7279ba483576f77ea5ed5983b76f08f70b5d78",
+  "source_url": "https://raw.githubusercontent.com/martj42/international_results/master/results.csv"
+}

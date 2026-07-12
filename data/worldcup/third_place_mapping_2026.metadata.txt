@@ -1,0 +1,4 @@
+source_url=https://digitalhub.fifa.com/m/636f5c9c6f29771f/original/FWC2026_regulations_EN.pdf
+source_sha256=bad4ea83cf1f51055598b0c12c3dab280a78777e08a623b9e9098508b4ecc8d9
+source_pages=80-97
+options=495

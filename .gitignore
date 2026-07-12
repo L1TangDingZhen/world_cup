@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+.env
+
+# Internal development roadmap, not published to the repository.
+世界杯预测系统_统一最终路线.md
