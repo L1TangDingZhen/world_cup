@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 
 from worldcup_predictor.evaluation.backtest import time_split_backtest
+from worldcup_predictor.evaluation.comparison import compare_elo_poisson_to_dixon_coles
 from worldcup_predictor.compute import (
     ComputeDevice,
     DeviceUnavailableError,
@@ -23,6 +24,7 @@ from worldcup_predictor.features.player_features import (
     aggregate_team_player_features,
     load_players,
 )
+from worldcup_predictor.models import load_model
 from worldcup_predictor.models.bayesian import BayesianHierarchicalModel
 from worldcup_predictor.models.dixon_coles import DixonColesModel
 from worldcup_predictor.models.elo_poisson import EloPoissonModel
@@ -33,7 +35,11 @@ from worldcup_predictor.models.tournament_value import (
 )
 from worldcup_predictor.simulation.actual_results import load_knockout_winners_from_files
 from worldcup_predictor.simulation.batch_tournament import load_batch_elo_poisson_simulator
-from worldcup_predictor.simulation.tournament import TournamentConfig, load_elo_poisson_simulator
+from worldcup_predictor.simulation.tournament import (
+    TournamentConfig,
+    TournamentSimulator,
+    load_elo_poisson_simulator,
+)
 from worldcup_predictor.store.db import (
     engine_from_url,
     init_database,
@@ -104,6 +110,28 @@ def _build_parser() -> argparse.ArgumentParser:
     backtest.add_argument("--calibration-bins", type=int, default=10)
     backtest.add_argument("--predictions-output", type=Path)
     backtest.add_argument("--calibration-output", type=Path)
+
+    compare_dc = subparsers.add_parser(
+        "compare-dixon-coles",
+        help="Fairly compare Elo-Poisson (per-match Elo updates) with a "
+        "rolling-refit Dixon-Coles on the same chronological test split",
+    )
+    compare_dc.add_argument("--matches", required=True, type=Path)
+    compare_dc.add_argument("--cutoff", required=True)
+    compare_dc.add_argument(
+        "--refit-days",
+        type=int,
+        default=30,
+        help="Refit Dixon-Coles every N days through the test window.",
+    )
+    compare_dc.add_argument(
+        "--window-days",
+        type=int,
+        default=3650,
+        help="Length of the rolling training window for each refit.",
+    )
+    compare_dc.add_argument("--max-iterations", type=int, default=2000)
+    compare_dc.add_argument("--output", type=Path)
 
     backtest_rating_v2 = subparsers.add_parser(
         "backtest-rating-v2",
@@ -566,6 +594,21 @@ def main() -> None:
         }, indent=2))
         return
 
+    if args.command == "compare-dixon-coles":
+        comparison = compare_elo_poisson_to_dixon_coles(
+            load_matches(args.matches, completed_only=True),
+            cutoff=args.cutoff,
+            refit_interval_days=args.refit_days,
+            training_window_days=args.window_days,
+            max_iterations=args.max_iterations,
+        )
+        if args.output:
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            comparison.rows.to_csv(args.output, index=False)
+        print(f"cutoff: {comparison.cutoff}")
+        print(comparison.rows.to_string(index=False))
+        return
+
     if args.command == "backtest":
         matches = load_matches(args.matches, completed_only=True)
         result = time_split_backtest(
@@ -766,6 +809,8 @@ def main() -> None:
 
     if args.command == "simulate":
         if not args.offline:
+            # catch_up refits the file according to its stored model_version
+            # (Elo-Poisson or Dixon-Coles) and leaves other types untouched.
             summary = catch_up(
                 raw_path=args.matches,
                 fixtures_path=args.fixtures,
@@ -780,10 +825,9 @@ def main() -> None:
                 config=TournamentConfig.from_csv(args.groups, args.fixtures),
                 shootouts_path=args.shootouts,
             )
-        simulator = load_elo_poisson_simulator(
-            model_path=args.model,
-            groups_path=args.groups,
-            fixtures_path=args.fixtures,
+        simulator = TournamentSimulator(
+            predictor=load_model(args.model),
+            config=TournamentConfig.from_csv(args.groups, args.fixtures),
             random_seed=args.seed,
             device=args.device,
             knockout_winners=knockout_winners,

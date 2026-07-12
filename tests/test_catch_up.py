@@ -158,3 +158,104 @@ def test_catch_up_offline_refits_model_from_local_files(tmp_path: Path) -> None:
     assert summary.fixtures_filled_now == 0
     assert summary.trained_through == summary.latest_result_date
     assert model_output.is_file()
+
+
+def test_catch_up_with_refit_disabled_leaves_model_untouched(
+    tmp_path: Path,
+) -> None:
+    fixtures_path = tmp_path / "fixtures.csv"
+    _write_fixtures(
+        fixtures_path,
+        [
+            {
+                "group": "A",
+                "date": "2030-01-01",
+                "home_team": "Atlas",
+                "away_team": "Comet",
+                "home_goals": None,
+                "away_goals": None,
+                "neutral_venue": True,
+            }
+        ],
+    )
+    model_output = tmp_path / "model.json"
+
+    summary = catch_up(
+        raw_path="data/examples/synthetic_matches.csv",
+        fixtures_path=fixtures_path,
+        model_output=model_output,
+        offline=True,
+        refit=False,
+    )
+
+    assert summary.model_output is None
+    assert summary.trained_through is None
+    assert not model_output.exists()
+
+
+def test_catch_up_refits_dixon_coles_files_in_place(tmp_path: Path) -> None:
+    from worldcup_predictor.ingestion.matches import load_matches
+    from worldcup_predictor.models import read_model_version
+    from worldcup_predictor.models.dixon_coles import DixonColesModel
+
+    matches = load_matches("data/examples/synthetic_matches.csv")
+    model_output = tmp_path / "dixon_coles.json"
+    DixonColesModel(max_iterations=500).fit(matches.head(10)).save(model_output)
+    fixtures_path = tmp_path / "fixtures.csv"
+    _write_fixtures(
+        fixtures_path,
+        [
+            {
+                "group": "A",
+                "date": "2030-01-01",
+                "home_team": "Atlas",
+                "away_team": "Comet",
+                "home_goals": None,
+                "away_goals": None,
+                "neutral_venue": True,
+            }
+        ],
+    )
+
+    summary = catch_up(
+        raw_path="data/examples/synthetic_matches.csv",
+        fixtures_path=fixtures_path,
+        model_output=model_output,
+        offline=True,
+    )
+
+    assert read_model_version(model_output) == "dixon_coles_v1"
+    assert summary.trained_through == summary.latest_result_date
+
+
+def test_catch_up_never_overwrites_unsupported_model_types(
+    tmp_path: Path,
+) -> None:
+    model_output = tmp_path / "bayesian.json"
+    original = '{"model_version": "bayesian_hierarchical_v1"}'
+    model_output.write_text(original, encoding="utf-8")
+    fixtures_path = tmp_path / "fixtures.csv"
+    _write_fixtures(
+        fixtures_path,
+        [
+            {
+                "group": "A",
+                "date": "2030-01-01",
+                "home_team": "Atlas",
+                "away_team": "Comet",
+                "home_goals": None,
+                "away_goals": None,
+                "neutral_venue": True,
+            }
+        ],
+    )
+
+    summary = catch_up(
+        raw_path="data/examples/synthetic_matches.csv",
+        fixtures_path=fixtures_path,
+        model_output=model_output,
+        offline=True,
+    )
+
+    assert summary.model_output is None
+    assert model_output.read_text(encoding="utf-8") == original

@@ -142,6 +142,11 @@ worldcup-predictor train-dixon-coles \
   --max-iterations 200 \
   --output models/dixon_coles_current.json
 
+# Fair dynamic comparison: per-match Elo updates vs rolling Dixon-Coles refits
+worldcup-predictor compare-dixon-coles \
+  --matches data/raw/international_results.csv \
+  --cutoff 2024-01-01
+
 worldcup-predictor train-bayesian \
   --matches data/raw/international_results.csv \
   --since 2018-01-01 \
@@ -221,7 +226,7 @@ docker compose up --build
 | 7 | FastAPI | Done |
 | 8 | Streamlit dashboard | Done |
 | 9 | Celery + Redis dynamic updates | Workflow, fixture updates, remaining-fixture re-prediction and Celery task done |
-| 10 | Dixon-Coles upgrade | Identifiability constraints, analytic gradients, ρ correction, save/load, CLI and convergence on real 2018+ data done |
+| 10 | Dixon-Coles upgrade | Identifiability constraints, analytic gradients, ρ correction, save/load, CLI and convergence on real 2018+ data done; a fair rolling-refit comparison beats Elo-Poisson on RPS/log-loss/Brier and fixes the draw under-estimation — see [docs/model_comparison.md](docs/model_comparison.md). `simulate --model models/dixon_coles_current.json` runs the tournament on it |
 | 11 | PyMC Bayesian upgrade | Empirical-Bayes and PyMC MCMC hierarchical models with posterior-sample prediction intervals done |
 | 12 | Player-level extension | CSV and API-Football sync, PostgreSQL persistence, injury/lineup/rating updates and the team+player hybrid predictor done |
 | 13 | Docker / docker-compose / README | Done |
@@ -386,6 +391,11 @@ worldcup-predictor train-dixon-coles \
   --max-iterations 200 \
   --output models/dixon_coles_current.json
 
+# 公平动态对照：Elo 逐场更新 vs Dixon-Coles 滚动重拟合
+worldcup-predictor compare-dixon-coles \
+  --matches data/raw/international_results.csv \
+  --cutoff 2024-01-01
+
 worldcup-predictor train-bayesian \
   --matches data/raw/international_results.csv \
   --since 2018-01-01 \
@@ -461,7 +471,7 @@ docker compose up --build
 | 7 | FastAPI | 完成 |
 | 8 | Streamlit dashboard | 完成 |
 | 9 | Celery + Redis 动态更新 | 完成 workflow、fixture 更新、剩余赛程重预测和 Celery task |
-| 10 | Dixon-Coles 升级 | 完成可辨识约束、解析梯度、ρ 修正、保存/加载、CLI 和真实 2018+ 数据收敛验证 |
+| 10 | Dixon-Coles 升级 | 完成可辨识约束、解析梯度、ρ 修正、保存/加载、CLI 和真实 2018+ 数据收敛验证；滚动重拟合的公平对照在 RPS/LogLoss/Brier 上全面优于 Elo-泊松并修复平局低估——见 [docs/model_comparison.md](docs/model_comparison.md)。`simulate --model models/dixon_coles_current.json` 可直接用它跑模拟 |
 | 11 | PyMC 贝叶斯升级 | 完成 Empirical-Bayes 与 PyMC MCMC 层级模型、后验抽样预测区间 |
 | 12 | 球员级扩展 | 完成 CSV 与 API-Football 同步、PostgreSQL 落库、伤病/首发/评分更新和 team+player hybrid predictor |
 | 13 | Docker / docker-compose / README | 完成 |

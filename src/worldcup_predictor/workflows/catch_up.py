@@ -18,12 +18,18 @@ from worldcup_predictor.ingestion.download import (
     download_international_results,
 )
 from worldcup_predictor.ingestion.matches import load_matches
+from worldcup_predictor.models import read_model_version
+from worldcup_predictor.models.dixon_coles import DixonColesModel
 from worldcup_predictor.models.elo_poisson import EloPoissonModel
 
 DEFAULT_RAW_PATH = Path("data/raw/international_results.csv")
 DEFAULT_SHOOTOUTS_PATH = Path("data/raw/shootouts.csv")
 DEFAULT_FIXTURES_PATH = Path("data/worldcup/fixtures_2026.csv")
 DEFAULT_MODEL_OUTPUT = Path("models/elo_poisson_current.json")
+
+# Dixon-Coles is refit on a rolling window rather than full history; this
+# matches the protocol validated in compare_elo_poisson_to_dixon_coles.
+DIXON_COLES_TRAINING_WINDOW_DAYS = 3650
 
 
 @dataclass(frozen=True)
@@ -34,7 +40,7 @@ class CatchUpSummary:
     fixtures_filled_now: int
     fixtures_with_results: int
     fixtures_total: int
-    model_output: str
+    model_output: str | None
     trained_through: str | None
 
     def to_dict(self) -> dict[str, object]:
@@ -91,7 +97,14 @@ def catch_up(
     model_output: str | Path = DEFAULT_MODEL_OUTPUT,
     shootouts_path: str | Path = DEFAULT_SHOOTOUTS_PATH,
     offline: bool = False,
+    refit: bool = True,
 ) -> CatchUpSummary:
+    """Sync data and fixtures; refit the Elo-Poisson model unless refit=False.
+
+    refit=False keeps the data refresh for callers whose model_output is not
+    an Elo-Poisson file (e.g. a Dixon-Coles model that must not be
+    overwritten by an Elo refit).
+    """
     raw = Path(raw_path)
     downloaded = False
     if not offline:
@@ -109,8 +122,10 @@ def catch_up(
 
     matches = load_matches(raw, completed_only=True)
     filled, with_results, total = fill_fixture_results(fixtures_path, matches)
-    model = EloPoissonModel().fit(matches)
-    model.save(model_output)
+    refit_output = None
+    trained_through = None
+    if refit:
+        refit_output, trained_through = _refit_model(model_output, matches)
 
     return CatchUpSummary(
         downloaded=downloaded,
@@ -119,6 +134,38 @@ def catch_up(
         fixtures_filled_now=filled,
         fixtures_with_results=with_results,
         fixtures_total=total,
-        model_output=str(model_output),
-        trained_through=model.trained_through,
+        model_output=refit_output,
+        trained_through=trained_through,
     )
+
+
+def _refit_model(
+    model_output: str | Path,
+    matches: pd.DataFrame,
+) -> tuple[str | None, str | None]:
+    """Refit the model file in place according to its stored model_version.
+
+    A missing file is created as Elo-Poisson. Dixon-Coles files are refit on
+    the rolling training window, keeping their stored configuration. Other
+    model versions are left untouched so the catch-up never overwrites a
+    model type it cannot rebuild.
+    """
+    path = Path(model_output)
+    version = (
+        read_model_version(path) if path.is_file() else EloPoissonModel.model_version
+    )
+    if version == EloPoissonModel.model_version:
+        model = EloPoissonModel().fit(matches)
+    elif version == DixonColesModel.model_version:
+        existing = DixonColesModel.load(path)
+        window_start = matches["date"].max() - pd.Timedelta(
+            days=DIXON_COLES_TRAINING_WINDOW_DAYS
+        )
+        model = DixonColesModel(
+            model_config=existing.model_config,
+            max_iterations=existing.max_iterations,
+        ).fit(matches.loc[matches["date"] >= window_start])
+    else:
+        return None, None
+    model.save(path)
+    return str(path), model.trained_through
