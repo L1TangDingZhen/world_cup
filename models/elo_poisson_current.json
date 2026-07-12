@@ -19,9 +19,9 @@
   },
   "model_version": "elo_poisson_v1",
   "parameters": {
-    "base_log_goal_rate": 0.10722163811295107,
-    "elo_coefficient": 0.7397068990499586,
-    "home_advantage": 0.2308953003313236,
+    "base_log_goal_rate": 0.10755246722097425,
+    "elo_coefficient": 0.7397276611752874,
+    "home_advantage": 0.2305552793948471,
     "time_decay_xi": 0.0006330111237990368
   },
   "ratings": {
@@ -38,7 +38,7 @@
     "Anguilla": 907.1354083008507,
     "Antigua and Barbuda": 1133.5838785266635,
     "Arameans Suryoye": 1529.8625777787765,
-    "Argentina": 2225.824352551986,
+    "Argentina": 2246.737748245317,
     "Armenia": 1433.9762666485092,
     "Artsakh": 1555.7686485624217,
     "Aruba": 1201.233933752594,
@@ -116,7 +116,7 @@
     "El Salvador": 1484.3158566733932,
     "Elba Island": 1515.009903299298,
     "Ellan Vannin": 1525.5331907570826,
-    "England": 2139.253944223917,
+    "England": 2159.784284575557,
     "Equatorial Guinea": 1441.4977637217157,
     "Eritrea": 1215.6751394366272,
     "Estonia": 1406.8166855945572,
@@ -236,7 +236,7 @@
     "Northern Cyprus": 1653.051912582672,
     "Northern Ireland": 1655.3257557499408,
     "Northern Mariana Islands": 1035.9329032713258,
-    "Norway": 2025.7070513115323,
+    "Norway": 2005.1767109598923,
     "Occitania": 1657.5517619553639,
     "Oman": 1562.340744822734,
     "Orkney": 1411.340938456769,
@@ -308,7 +308,7 @@
     "Suriname": 1579.6176436935953,
     "Surrey": 1517.0384940264046,
     "Sweden": 1786.6229885060766,
-    "Switzerland": 2018.2366355691108,
+    "Switzerland": 1997.32323987578,
     "Syria": 1588.4135208878392,
     "Sz\u00e9kely Land": 1458.3067158357348,
     "S\u00e1pmi": 1454.4194496832113,
@@ -362,5 +362,5 @@
     "Zimbabwe": 1462.741601408155,
     "\u00c5land Islands": 1482.1288660561731
   },
-  "trained_through": "2026-07-10"
+  "trained_through": "2026-07-11"
 }
