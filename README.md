@@ -133,6 +133,10 @@ worldcup-predictor simulate \
 # Or refresh data and the model without simulating:
 worldcup-predictor catch-up
 
+# Every simulate/dynamic-update run with an output file also writes a dated
+# snapshot to data/processed/forecast_history/, preserving how the forecast
+# evolved through the tournament.
+
 worldcup-predictor benchmark-prediction \
   --model models/elo_poisson_current.json \
   --home Argentina --away France --iterations 10000
@@ -393,6 +397,9 @@ worldcup-predictor simulate \
 
 # 也可以单独补齐数据与模型（不模拟）：
 worldcup-predictor catch-up
+
+# simulate / dynamic-update 每次写输出文件时，还会在
+# data/processed/forecast_history/ 留一份带日期的快照，保存预测随赛程的演化轨迹。
 
 worldcup-predictor benchmark-prediction \
   --model models/elo_poisson_current.json \

@@ -11,6 +11,7 @@ from worldcup_predictor.simulation.tournament import (
     TournamentConfig,
     TournamentSimulator,
 )
+from worldcup_predictor.store.forecast_archive import write_forecast_with_history
 
 
 @dataclass(frozen=True)
@@ -153,8 +154,7 @@ def run_dynamic_update(
         random_seed=seed,
     ).run(simulations=simulations)
     simulation_path = Path(simulation_output)
-    simulation_path.parent.mkdir(parents=True, exist_ok=True)
-    simulation.to_csv(simulation_path, index=False)
+    write_forecast_with_history(simulation, simulation_path)
     return asdict(
         DynamicUpdateSummary(
             matches=len(matches),

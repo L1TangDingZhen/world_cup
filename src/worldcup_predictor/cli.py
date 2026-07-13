@@ -50,6 +50,7 @@ from worldcup_predictor.store.db import (
     table_names,
     write_schema_sql,
 )
+from worldcup_predictor.store.forecast_archive import write_forecast_with_history
 from worldcup_predictor.store.parquet_io import export_matches_parquet
 from worldcup_predictor.workflows.catch_up import catch_up
 from worldcup_predictor.workflows.dynamic_update import (
@@ -888,14 +889,15 @@ def main() -> None:
             knockout_winners=knockout_winners,
         )
         result = simulator.run(simulations=args.simulations)
+        archive_path = None
         if args.output:
-            args.output.parent.mkdir(parents=True, exist_ok=True)
-            result.to_csv(args.output, index=False)
+            archive_path = write_forecast_with_history(result, args.output)
         print(
             json.dumps(
                 {
                     "device": resolve_device(args.device).name,
                     "pinned_knockout_results": len(knockout_winners or {}),
+                    "forecast_archived_to": str(archive_path) if archive_path else None,
                 },
                 indent=2,
             )
