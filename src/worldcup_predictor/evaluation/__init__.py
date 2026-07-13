@@ -13,9 +13,15 @@ from worldcup_predictor.evaluation.metrics import (
     ranked_probability_score,
 )
 from worldcup_predictor.evaluation.rating_v2_backtest import backtest_rating_v2_poisson
+from worldcup_predictor.evaluation.tournament_backtest import (
+    TournamentBacktestResult,
+    backtest_tournament,
+)
 
 __all__ = [
     "BacktestResult",
+    "TournamentBacktestResult",
+    "backtest_tournament",
     "brier_score",
     "calibration_table",
     "backtest_dixon_coles",

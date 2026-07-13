@@ -1,0 +1,49 @@
+group,date,home_team,away_team,home_goals,away_goals,neutral_venue
+A,2018-06-14,Russia,Saudi Arabia,,,false
+A,2018-06-14,Russia,Egypt,,,false
+A,2018-06-14,Russia,Uruguay,,,false
+A,2018-06-14,Saudi Arabia,Egypt,,,true
+A,2018-06-14,Saudi Arabia,Uruguay,,,true
+A,2018-06-14,Egypt,Uruguay,,,true
+B,2018-06-14,Portugal,Spain,,,true
+B,2018-06-14,Portugal,Morocco,,,true
+B,2018-06-14,Portugal,Iran,,,true
+B,2018-06-14,Spain,Morocco,,,true
+B,2018-06-14,Spain,Iran,,,true
+B,2018-06-14,Morocco,Iran,,,true
+C,2018-06-14,France,Australia,,,true
+C,2018-06-14,France,Peru,,,true
+C,2018-06-14,France,Denmark,,,true
+C,2018-06-14,Australia,Peru,,,true
+C,2018-06-14,Australia,Denmark,,,true
+C,2018-06-14,Peru,Denmark,,,true
+D,2018-06-14,Argentina,Iceland,,,true
+D,2018-06-14,Argentina,Croatia,,,true
+D,2018-06-14,Argentina,Nigeria,,,true
+D,2018-06-14,Iceland,Croatia,,,true
+D,2018-06-14,Iceland,Nigeria,,,true
+D,2018-06-14,Croatia,Nigeria,,,true
+E,2018-06-14,Brazil,Switzerland,,,true
+E,2018-06-14,Brazil,Costa Rica,,,true
+E,2018-06-14,Brazil,Serbia,,,true
+E,2018-06-14,Switzerland,Costa Rica,,,true
+E,2018-06-14,Switzerland,Serbia,,,true
+E,2018-06-14,Costa Rica,Serbia,,,true
+F,2018-06-14,Germany,Mexico,,,true
+F,2018-06-14,Germany,Sweden,,,true
+F,2018-06-14,Germany,South Korea,,,true
+F,2018-06-14,Mexico,Sweden,,,true
+F,2018-06-14,Mexico,South Korea,,,true
+F,2018-06-14,Sweden,South Korea,,,true
+G,2018-06-14,Belgium,Panama,,,true
+G,2018-06-14,Belgium,Tunisia,,,true
+G,2018-06-14,Belgium,England,,,true
+G,2018-06-14,Panama,Tunisia,,,true
+G,2018-06-14,Panama,England,,,true
+G,2018-06-14,Tunisia,England,,,true
+H,2018-06-14,Poland,Senegal,,,true
+H,2018-06-14,Poland,Colombia,,,true
+H,2018-06-14,Poland,Japan,,,true
+H,2018-06-14,Senegal,Colombia,,,true
+H,2018-06-14,Senegal,Japan,,,true
+H,2018-06-14,Colombia,Japan,,,true

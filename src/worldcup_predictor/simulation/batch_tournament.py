@@ -16,9 +16,6 @@ from worldcup_predictor.simulation.group_stage import (
     rank_third_placed,
 )
 from worldcup_predictor.simulation.tournament import (
-    BRACKET_ROUNDS,
-    ROUND_OF_32_MATCHES,
-    STAGE_REACHED_BY_BRACKET_ROUND,
     TournamentConfig,
     resolve_third_place_slots,
     validate_predictor_covers_teams,
@@ -62,17 +59,10 @@ class BatchTournamentSimulator:
         if simulations <= 0:
             raise ValueError("simulations must be positive")
 
+        tournament_format = self.config.format
         teams = self.config.groups["team"].tolist()
         counters = {
-            team: {
-                "group_qualify": 0,
-                "round_of_32": 0,
-                "round_of_16": 0,
-                "quarter_final": 0,
-                "semi_final": 0,
-                "final": 0,
-                "champion": 0,
-            }
+            team: {stage: 0 for stage in tournament_format.stage_columns}
             for team in teams
         }
 
@@ -86,41 +76,47 @@ class BatchTournamentSimulator:
                 selectors[f"R_{group}"] = standings[1].team
                 thirds.append(standings[2])
 
-            qualified_thirds = rank_third_placed(thirds)[:8]
-            third_assignments = resolve_third_place_slots(
-                [standing.group for standing in qualified_thirds],
-                self.config.third_place_mapping,
-            )
-            third_by_group = {
-                standing.group: standing.team for standing in qualified_thirds
-            }
-            for slot, group in third_assignments.items():
-                selectors[slot] = third_by_group[group]
-
             qualified = set(selectors[f"W_{group}"] for group in ranked_groups)
             qualified.update(selectors[f"R_{group}"] for group in ranked_groups)
-            qualified.update(third_by_group.values())
+
+            if tournament_format.third_place is not None:
+                qualified_thirds = rank_third_placed(thirds)[
+                    : tournament_format.third_place.qualifier_count
+                ]
+                third_assignments = resolve_third_place_slots(
+                    [standing.group for standing in qualified_thirds],
+                    self.config.third_place_mapping,
+                )
+                third_by_group = {
+                    standing.group: standing.team for standing in qualified_thirds
+                }
+                for slot, group in third_assignments.items():
+                    selectors[slot] = third_by_group[group]
+                qualified.update(third_by_group.values())
+
             for team in qualified:
                 counters[team]["group_qualify"] += 1
-                counters[team]["round_of_32"] += 1
+                counters[team][tournament_format.qualification_stage] += 1
             selectors_by_run.append(selectors)
 
         winners_by_run = [dict[int, str]() for _ in range(simulations)]
-        round_of_32_pairs = [
+        entry_pairs = [
             (selectors[left_selector], selectors[right_selector])
             for selectors in selectors_by_run
-            for _, left_selector, right_selector in ROUND_OF_32_MATCHES
+            for _, left_selector, right_selector in tournament_format.entry_matches
         ]
-        round_of_32_winners = self._sample_knockout_winners(round_of_32_pairs)
+        entry_winners = self._sample_knockout_winners(entry_pairs)
         cursor = 0
         for winners in winners_by_run:
-            for match_id, _, _ in ROUND_OF_32_MATCHES:
-                winners[match_id] = round_of_32_winners[cursor]
-                counters[winners[match_id]]["round_of_16"] += 1
+            for match_id, _, _ in tournament_format.entry_matches:
+                winners[match_id] = entry_winners[cursor]
+                counters[winners[match_id]][
+                    tournament_format.entry_winners_reach
+                ] += 1
                 cursor += 1
 
-        for round_index, round_matches in enumerate(BRACKET_ROUNDS):
-            stage = STAGE_REACHED_BY_BRACKET_ROUND.get(round_index)
+        for round_index, round_matches in enumerate(tournament_format.bracket_rounds):
+            stage = tournament_format.stage_reached_by_bracket_round.get(round_index)
             pairs = [
                 (winners[left_match], winners[right_match])
                 for winners in winners_by_run
@@ -137,7 +133,7 @@ class BatchTournamentSimulator:
                     cursor += 1
 
         for winners in winners_by_run:
-            counters[winners[103]]["champion"] += 1
+            counters[winners[tournament_format.final_match_id]]["champion"] += 1
 
         rows = []
         for team, values in counters.items():
@@ -206,7 +202,11 @@ class BatchTournamentSimulator:
                 )
             ranked_group_runs.append(
                 {
-                    group: rank_group(group_standings, group_matches[group])
+                    group: rank_group(
+                        group_standings,
+                        group_matches[group],
+                        rules=self.config.format.ranking_rules,
+                    )
                     for group, group_standings in standings.items()
                 }
             )

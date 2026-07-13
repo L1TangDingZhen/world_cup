@@ -129,6 +129,43 @@ def test_stage_probabilities_use_reach_semantics_and_decrease() -> None:
         ), row["team"]
 
 
+def test_wc32_format_simulates_2018_bracket() -> None:
+    config = TournamentConfig.from_csv(
+        "data/worldcup/groups_2018.csv",
+        "data/worldcup/fixtures_2018.csv",
+        format_name="wc32",
+    )
+    predictor = DummyPredictor(config.groups["team"].tolist())
+    result = TournamentSimulator(
+        predictor=predictor,
+        config=config,
+        random_seed=11,
+    ).run(simulations=4)
+
+    assert len(result) == 32
+    expected_totals = {
+        "group_qualify_prob": 16.0,
+        "round_of_16_prob": 16.0,
+        "quarter_final_prob": 8.0,
+        "semi_final_prob": 4.0,
+        "final_prob": 2.0,
+        "champion_prob": 1.0,
+    }
+    for column, total in expected_totals.items():
+        assert result[column].sum() == pytest.approx(total), column
+    assert "round_of_32_prob" not in result.columns
+
+    batch = BatchTournamentSimulator(
+        predictor=predictor,
+        config=config,
+        random_seed=11,
+    ).run(simulations=4)
+    baseline = result.sort_values("team").reset_index(drop=True)
+    batch = batch.sort_values("team").reset_index(drop=True)
+    for column in expected_totals:
+        assert np.allclose(batch[column], baseline[column]), column
+
+
 def test_batch_tournament_simulation_matches_deterministic_simulator() -> None:
     config = TournamentConfig.from_csv(
         "data/worldcup/groups_2026.csv",

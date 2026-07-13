@@ -1,0 +1,49 @@
+group,date,home_team,away_team,home_goals,away_goals,neutral_venue
+A,2022-11-20,Qatar,Ecuador,,,false
+A,2022-11-20,Qatar,Senegal,,,false
+A,2022-11-20,Qatar,Netherlands,,,false
+A,2022-11-20,Ecuador,Senegal,,,true
+A,2022-11-20,Ecuador,Netherlands,,,true
+A,2022-11-20,Senegal,Netherlands,,,true
+B,2022-11-20,England,Iran,,,true
+B,2022-11-20,England,United States,,,true
+B,2022-11-20,England,Wales,,,true
+B,2022-11-20,Iran,United States,,,true
+B,2022-11-20,Iran,Wales,,,true
+B,2022-11-20,United States,Wales,,,true
+C,2022-11-20,Argentina,Saudi Arabia,,,true
+C,2022-11-20,Argentina,Mexico,,,true
+C,2022-11-20,Argentina,Poland,,,true
+C,2022-11-20,Saudi Arabia,Mexico,,,true
+C,2022-11-20,Saudi Arabia,Poland,,,true
+C,2022-11-20,Mexico,Poland,,,true
+D,2022-11-20,France,Australia,,,true
+D,2022-11-20,France,Denmark,,,true
+D,2022-11-20,France,Tunisia,,,true
+D,2022-11-20,Australia,Denmark,,,true
+D,2022-11-20,Australia,Tunisia,,,true
+D,2022-11-20,Denmark,Tunisia,,,true
+E,2022-11-20,Spain,Costa Rica,,,true
+E,2022-11-20,Spain,Germany,,,true
+E,2022-11-20,Spain,Japan,,,true
+E,2022-11-20,Costa Rica,Germany,,,true
+E,2022-11-20,Costa Rica,Japan,,,true
+E,2022-11-20,Germany,Japan,,,true
+F,2022-11-20,Belgium,Canada,,,true
+F,2022-11-20,Belgium,Morocco,,,true
+F,2022-11-20,Belgium,Croatia,,,true
+F,2022-11-20,Canada,Morocco,,,true
+F,2022-11-20,Canada,Croatia,,,true
+F,2022-11-20,Morocco,Croatia,,,true
+G,2022-11-20,Brazil,Serbia,,,true
+G,2022-11-20,Brazil,Switzerland,,,true
+G,2022-11-20,Brazil,Cameroon,,,true
+G,2022-11-20,Serbia,Switzerland,,,true
+G,2022-11-20,Serbia,Cameroon,,,true
+G,2022-11-20,Switzerland,Cameroon,,,true
+H,2022-11-20,Portugal,Ghana,,,true
+H,2022-11-20,Portugal,Uruguay,,,true
+H,2022-11-20,Portugal,South Korea,,,true
+H,2022-11-20,Ghana,Uruguay,,,true
+H,2022-11-20,Ghana,South Korea,,,true
+H,2022-11-20,Uruguay,South Korea,,,true

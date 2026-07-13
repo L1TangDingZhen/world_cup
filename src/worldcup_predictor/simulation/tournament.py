@@ -12,6 +12,14 @@ import pandas as pd
 
 from worldcup_predictor.compute import ComputeDevice
 from worldcup_predictor.models.elo_poisson import EloPoissonModel
+from worldcup_predictor.simulation.formats import (
+    BRACKET_ROUNDS_2026,
+    ROUND_OF_32_MATCHES,
+    THIRD_PLACE_SLOT_ALLOWED,
+    TournamentFormat,
+    WC48_2026,
+    get_format,
+)
 from worldcup_predictor.simulation.group_stage import (
     GroupMatch,
     GroupStanding,
@@ -27,61 +35,20 @@ class MatchPredictor(Protocol):
         ...
 
 
-ROUND_OF_32_MATCHES = [
-    (73, "R_A", "R_B"),
-    (74, "W_E", "T_M74"),
-    (75, "W_F", "R_C"),
-    (76, "W_C", "R_F"),
-    (77, "W_I", "T_M77"),
-    (78, "R_E", "R_I"),
-    (79, "W_A", "T_M79"),
-    (80, "W_L", "T_M80"),
-    (81, "W_D", "T_M81"),
-    (82, "W_G", "T_M82"),
-    (83, "R_K", "R_L"),
-    (84, "W_H", "R_J"),
-    (85, "W_B", "T_M85"),
-    (86, "W_J", "R_H"),
-    (87, "W_K", "T_M87"),
-    (88, "R_D", "R_G"),
-]
-
-THIRD_PLACE_SLOT_ALLOWED = {
-    "T_M74": set("ABCDF"),
-    "T_M77": set("CDFGH"),
-    "T_M79": set("CEFHI"),
-    "T_M80": set("EHIJK"),
-    "T_M81": set("BEFIJ"),
-    "T_M82": set("AEHIJ"),
-    "T_M85": set("EFGIJ"),
-    "T_M87": set("DEIJL"),
-}
-
-BRACKET_ROUNDS = [
-    [(89, 74, 77), (90, 73, 75), (91, 76, 78), (92, 79, 80),
-     (93, 83, 84), (94, 81, 82), (95, 86, 88), (96, 85, 87)],
-    [(97, 89, 90), (98, 93, 94), (99, 91, 92), (100, 95, 96)],
-    [(101, 97, 98), (102, 99, 100)],
-    [(103, 101, 102)],
-]
-
+# Backwards-compatible aliases; the format definitions live in formats.py.
 # Stage probabilities use "reached this stage" semantics: winning a match at
-# one stage means reaching the next one.  Winners of the bracket rounds below
-# (round of 16, quarter-finals, semi-finals) therefore count toward the next
-# stage; winners of the round-of-32 matches count toward "round_of_16", and
-# the winner of the final only counts toward "champion".
-STAGE_REACHED_BY_BRACKET_ROUND = {
-    0: "quarter_final",
-    1: "semi_final",
-    2: "final",
-}
+# one stage counts toward the next stage's column, and the winner of the
+# final only counts toward "champion".
+BRACKET_ROUNDS = BRACKET_ROUNDS_2026
+STAGE_REACHED_BY_BRACKET_ROUND = WC48_2026.stage_reached_by_bracket_round
 
 
 @dataclass(frozen=True)
 class TournamentConfig:
     groups: pd.DataFrame
     fixtures: pd.DataFrame
-    third_place_mapping: dict[str, dict[str, str]]
+    third_place_mapping: dict[str, dict[str, str]] | None = None
+    format: TournamentFormat = WC48_2026
 
     @classmethod
     def from_csv(
@@ -89,7 +56,9 @@ class TournamentConfig:
         groups_path: str | Path,
         fixtures_path: str | Path,
         mapping_path: str | Path = "data/worldcup/third_place_mapping_2026.csv",
+        format_name: str = WC48_2026.name,
     ) -> "TournamentConfig":
+        tournament_format = get_format(format_name)
         groups = pd.read_csv(groups_path)
         fixtures = pd.read_csv(fixtures_path)
         required_groups = {"group", "team"}
@@ -129,24 +98,35 @@ class TournamentConfig:
         for group, teams in groups.groupby("group")["team"]:
             if len(teams) != 4:
                 raise ValueError(f"Group {group} must contain exactly 4 teams")
-        mapping_frame = pd.read_csv(mapping_path)
-        expected_mapping_columns = {"qualifying_groups", *THIRD_PLACE_SLOT_ALLOWED}
-        missing_mapping = expected_mapping_columns - set(mapping_frame.columns)
-        if missing_mapping:
-            raise ValueError(f"Missing third-place mapping columns: {sorted(missing_mapping)}")
-        mapping = {
-            str(row.qualifying_groups): {
-                slot: str(getattr(row, slot))
-                for slot in THIRD_PLACE_SLOT_ALLOWED
+        group_count = groups["group"].nunique()
+        if group_count != tournament_format.group_count:
+            raise ValueError(
+                f"Format {tournament_format.name} expects "
+                f"{tournament_format.group_count} groups, found {group_count}"
+            )
+
+        mapping: dict[str, dict[str, str]] | None = None
+        if tournament_format.third_place is not None:
+            slot_names = tournament_format.third_place.slot_allowed_groups
+            mapping_frame = pd.read_csv(mapping_path)
+            expected_mapping_columns = {"qualifying_groups", *slot_names}
+            missing_mapping = expected_mapping_columns - set(mapping_frame.columns)
+            if missing_mapping:
+                raise ValueError(f"Missing third-place mapping columns: {sorted(missing_mapping)}")
+            mapping = {
+                str(row.qualifying_groups): {
+                    slot: str(getattr(row, slot))
+                    for slot in slot_names
+                }
+                for row in mapping_frame.itertuples(index=False)
             }
-            for row in mapping_frame.itertuples(index=False)
-        }
-        if len(mapping) != 495:
-            raise ValueError(f"Expected 495 official third-place mappings, found {len(mapping)}")
+            if len(mapping) != 495:
+                raise ValueError(f"Expected 495 official third-place mappings, found {len(mapping)}")
         return cls(
             groups=groups.sort_values(["group", "team"]).reset_index(drop=True),
             fixtures=fixtures.sort_values("date", kind="stable").reset_index(drop=True),
             third_place_mapping=mapping,
+            format=tournament_format,
         )
 
 
@@ -199,24 +179,17 @@ class TournamentSimulator:
     def run(self, simulations: int = 1000) -> pd.DataFrame:
         if simulations <= 0:
             raise ValueError("simulations must be positive")
+        tournament_format = self.config.format
         teams = self.config.groups["team"].tolist()
         counters = {
-            team: {
-                "group_qualify": 0,
-                "round_of_32": 0,
-                "round_of_16": 0,
-                "quarter_final": 0,
-                "semi_final": 0,
-                "final": 0,
-                "champion": 0,
-            }
+            team: {stage: 0 for stage in tournament_format.stage_columns}
             for team in teams
         }
         for _ in range(simulations):
             result = self.simulate_once()
             for team in result["qualified"]:
                 counters[team]["group_qualify"] += 1
-                counters[team]["round_of_32"] += 1
+                counters[team][tournament_format.qualification_stage] += 1
             for stage, stage_teams in result["stage_advancers"].items():
                 for team in stage_teams:
                     counters[team][stage] += 1
@@ -245,6 +218,7 @@ class TournamentSimulator:
         return pd.DataFrame(rows).sort_values("champion_prob", ascending=False).reset_index(drop=True)
 
     def simulate_once(self) -> dict[str, object]:
+        tournament_format = self.config.format
         ranked_groups = self._simulate_group_stage()
         selectors: dict[str, str] = {}
         thirds: list[GroupStanding] = []
@@ -253,33 +227,43 @@ class TournamentSimulator:
             selectors[f"R_{group}"] = standings[1].team
             thirds.append(standings[2])
 
-        qualified_thirds = rank_third_placed(thirds)[:8]
-        third_assignments = resolve_third_place_slots(
-            [standing.group for standing in qualified_thirds],
-            self.config.third_place_mapping,
-        )
-        third_by_group = {standing.group: standing.team for standing in qualified_thirds}
-        for slot, group in third_assignments.items():
-            selectors[slot] = third_by_group[group]
-
-        winners: dict[int, str] = {}
         qualified = set(selectors[f"W_{group}"] for group in ranked_groups)
         qualified.update(selectors[f"R_{group}"] for group in ranked_groups)
-        qualified.update(third_by_group.values())
 
+        if tournament_format.third_place is not None:
+            qualified_thirds = rank_third_placed(thirds)[
+                : tournament_format.third_place.qualifier_count
+            ]
+            third_assignments = resolve_third_place_slots(
+                [standing.group for standing in qualified_thirds],
+                self.config.third_place_mapping,
+            )
+            third_by_group = {
+                standing.group: standing.team for standing in qualified_thirds
+            }
+            for slot, group in third_assignments.items():
+                selectors[slot] = third_by_group[group]
+            qualified.update(third_by_group.values())
+
+        winners: dict[int, str] = {}
         stage_advancers: dict[str, set[str]] = {
-            "round_of_16": set(),
-            **{stage: set() for stage in STAGE_REACHED_BY_BRACKET_ROUND.values()},
+            tournament_format.entry_winners_reach: set(),
+            **{
+                stage: set()
+                for stage in tournament_format.stage_reached_by_bracket_round.values()
+            },
         }
-        for match_id, left_selector, right_selector in ROUND_OF_32_MATCHES:
+        for match_id, left_selector, right_selector in tournament_format.entry_matches:
             winners[match_id] = self._simulate_knockout_match(
                 selectors[left_selector],
                 selectors[right_selector],
             )
-            stage_advancers["round_of_16"].add(winners[match_id])
+            stage_advancers[tournament_format.entry_winners_reach].add(
+                winners[match_id]
+            )
 
-        for round_index, round_matches in enumerate(BRACKET_ROUNDS):
-            stage = STAGE_REACHED_BY_BRACKET_ROUND.get(round_index)
+        for round_index, round_matches in enumerate(tournament_format.bracket_rounds):
+            stage = tournament_format.stage_reached_by_bracket_round.get(round_index)
             for match_id, left_match, right_match in round_matches:
                 winners[match_id] = self._simulate_knockout_match(
                     winners[left_match],
@@ -292,7 +276,7 @@ class TournamentSimulator:
             "ranked_groups": ranked_groups,
             "qualified": qualified,
             "stage_advancers": stage_advancers,
-            "champion": winners[103],
+            "champion": winners[tournament_format.final_match_id],
         }
 
     def _simulate_group_stage(self) -> dict[str, list[GroupStanding]]:
@@ -329,7 +313,11 @@ class TournamentSimulator:
                 )
             )
         return {
-            group: rank_group(group_standings, group_matches[group])
+            group: rank_group(
+                group_standings,
+                group_matches[group],
+                rules=self.config.format.ranking_rules,
+            )
             for group, group_standings in standings.items()
         }
 

@@ -22,6 +22,11 @@ Current features:
 - 2026 World Cup simulator: 48 teams, 12 groups, FIFA Article 13 tie-breakers,
   the official Annexe C third-place bracket mapping (all 495 combinations),
   and Monte Carlo aggregation of per-round advancement probabilities
+- Config-driven tournament formats: the 48-team 2026 edition and the 32-team
+  2018/2022 edition (with the pre-2026 tie-breaker order) share one simulator
+- Full-pipeline historical backtests of the 2018 and 2022 World Cups with
+  per-stage skill scores against a structural baseline — see
+  [docs/tournament_backtest.md](docs/tournament_backtest.md)
 - Pre-simulation catch-up: download the latest results, fill fixture scores,
   refit the model, and pin already-played knockout matches to their real
   winners (penalty shootouts resolved from the companion shootouts data)
@@ -146,6 +151,15 @@ worldcup-predictor train-dixon-coles \
 worldcup-predictor compare-dixon-coles \
   --matches data/raw/international_results.csv \
   --cutoff 2024-01-01
+
+# Full-pipeline backtest: train before a past World Cup, simulate the whole
+# tournament and score stage probabilities against what really happened
+worldcup-predictor backtest-tournament \
+  --matches data/raw/international_results.csv \
+  --groups data/worldcup/groups_2018.csv \
+  --fixtures data/worldcup/fixtures_2018.csv \
+  --actual data/worldcup/actual_2018.csv \
+  --format wc32 --train-before 2018-06-14 --label wc2018
 
 worldcup-predictor train-bayesian \
   --matches data/raw/international_results.csv \
@@ -281,6 +295,9 @@ from FIFA Regulations Annexe C into
 - 模型参数与 Elo 快照的 JSON 持久化
 - 训练、排名和预测 CLI
 - 2026 世界杯 48 队模拟器（FIFA 第 13 条排名规则、Annexe C 官方 495 种第三名对阵映射）
+- 赛制配置化：48 队 2026 赛制与 32 队 2018/2022 赛制（含旧版排名规则）共用同一个模拟器
+- 2018/2022 整届历史回测：各轮晋级概率对照真实结果的技能分——见
+  [docs/tournament_backtest.md](docs/tournament_backtest.md)
 - 模拟前 catch-up：下载最新数据、回填比分、重训模型，并把已踢完的淘汰赛钉为真实胜者
 - Parquet processed data
 - PostgreSQL schema / SQLAlchemy 存储层
@@ -395,6 +412,14 @@ worldcup-predictor train-dixon-coles \
 worldcup-predictor compare-dixon-coles \
   --matches data/raw/international_results.csv \
   --cutoff 2024-01-01
+
+# 整届回测：用赛前数据训练，模拟整届世界杯，对照真实晋级结果给各轮概率打分
+worldcup-predictor backtest-tournament \
+  --matches data/raw/international_results.csv \
+  --groups data/worldcup/groups_2018.csv \
+  --fixtures data/worldcup/fixtures_2018.csv \
+  --actual data/worldcup/actual_2018.csv \
+  --format wc32 --train-before 2018-06-14 --label wc2018
 
 worldcup-predictor train-bayesian \
   --matches data/raw/international_results.csv \

@@ -111,21 +111,63 @@ def _rank_tied_teams(
     )
 
 
+RANKING_RULES = ("fifa_2026", "fifa_pre_2026")
+
+
 def rank_group(
     standings: dict[str, GroupStanding],
     matches: list[GroupMatch] | None = None,
+    rules: str = "fifa_2026",
 ) -> list[GroupStanding]:
-    """Rank a group under FIFA World Cup 2026 Article 13."""
+    """Rank a group under the requested FIFA rule book.
+
+    fifa_2026: points, then head-to-head among the tied teams (reapplied),
+    then overall goal difference and goals scored — the 2026 Article 13
+    order. fifa_pre_2026: points, overall goal difference and goals scored
+    first, head-to-head only afterwards — the order used at the 2018 and
+    2022 World Cups.
+    """
     matches = matches or []
-    points_partitions = _partition_by_key(
-        list(standings),
-        lambda team: (standings[team].points,),
-    )
-    ordered_teams = [
-        team
-        for partition in points_partitions
-        for team in _rank_tied_teams(partition, standings, matches)
-    ]
+    if rules == "fifa_2026":
+        points_partitions = _partition_by_key(
+            list(standings),
+            lambda team: (standings[team].points,),
+        )
+        ordered_teams = [
+            team
+            for partition in points_partitions
+            for team in _rank_tied_teams(partition, standings, matches)
+        ]
+    elif rules == "fifa_pre_2026":
+        overall_partitions = _partition_by_key(
+            list(standings),
+            lambda team: (
+                standings[team].points,
+                standings[team].goal_difference,
+                standings[team].goals_for,
+            ),
+        )
+        ordered_teams = []
+        for partition in overall_partitions:
+            if len(partition) == 1:
+                ordered_teams.extend(partition)
+                continue
+            mini = _mini_table(set(partition), matches, standings)
+            ordered_teams.extend(
+                sorted(
+                    partition,
+                    key=lambda team: (
+                        -mini[team].points,
+                        -mini[team].goal_difference,
+                        -mini[team].goals_for,
+                        -standings[team].fair_play_score,
+                        standings[team].fifa_ranking,
+                        team,
+                    ),
+                )
+            )
+    else:
+        raise ValueError(f"Unknown ranking rules: {rules!r}; expected one of {RANKING_RULES}")
     return [standings[team] for team in ordered_teams]
 
 

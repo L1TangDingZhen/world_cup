@@ -10,6 +10,7 @@ import pandas as pd
 
 from worldcup_predictor.evaluation.backtest import time_split_backtest
 from worldcup_predictor.evaluation.comparison import compare_elo_poisson_to_dixon_coles
+from worldcup_predictor.evaluation.tournament_backtest import backtest_tournament
 from worldcup_predictor.compute import (
     ComputeDevice,
     DeviceUnavailableError,
@@ -132,6 +133,40 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     compare_dc.add_argument("--max-iterations", type=int, default=2000)
     compare_dc.add_argument("--output", type=Path)
+
+    backtest_tournament_parser = subparsers.add_parser(
+        "backtest-tournament",
+        help="Train on pre-tournament data, simulate a whole past World Cup "
+        "and score stage probabilities against the real progression",
+    )
+    backtest_tournament_parser.add_argument("--matches", required=True, type=Path)
+    backtest_tournament_parser.add_argument("--groups", required=True, type=Path)
+    backtest_tournament_parser.add_argument("--fixtures", required=True, type=Path)
+    backtest_tournament_parser.add_argument("--actual", required=True, type=Path)
+    backtest_tournament_parser.add_argument(
+        "--format",
+        default="wc32",
+        choices=("wc32", "wc48_2026"),
+        dest="format_name",
+    )
+    backtest_tournament_parser.add_argument(
+        "--train-before",
+        required=True,
+        help="Tournament start date; only earlier matches are used for training.",
+    )
+    backtest_tournament_parser.add_argument(
+        "--model-type",
+        default="elo_poisson",
+        choices=("elo_poisson", "dixon_coles"),
+    )
+    backtest_tournament_parser.add_argument("--label")
+    backtest_tournament_parser.add_argument("--simulations", type=int, default=10_000)
+    backtest_tournament_parser.add_argument("--seed", type=int, default=42)
+    backtest_tournament_parser.add_argument(
+        "--team-output",
+        type=Path,
+        help="Optional CSV path for the per-team probability/actual table.",
+    )
 
     backtest_rating_v2 = subparsers.add_parser(
         "backtest-rating-v2",
@@ -592,6 +627,26 @@ def main() -> None:
             "trained_through": model.trained_through,
             "output": str(args.output),
         }, indent=2))
+        return
+
+    if args.command == "backtest-tournament":
+        result = backtest_tournament(
+            load_matches(args.matches, completed_only=True),
+            groups_path=args.groups,
+            fixtures_path=args.fixtures,
+            actual_path=args.actual,
+            format_name=args.format_name,
+            train_before=args.train_before,
+            tournament_label=args.label,
+            model_type=args.model_type,
+            simulations=args.simulations,
+            seed=args.seed,
+        )
+        if args.team_output:
+            args.team_output.parent.mkdir(parents=True, exist_ok=True)
+            result.team_table.to_csv(args.team_output, index=False)
+        print(json.dumps(result.summary(), indent=2))
+        print(result.stage_table.to_string(index=False))
         return
 
     if args.command == "compare-dixon-coles":
