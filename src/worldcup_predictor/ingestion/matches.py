@@ -54,13 +54,14 @@ def validate_matches(
 
     for column in ("home_team", "away_team", "competition_type"):
         frame[column] = frame[column].astype("string").str.strip()
-        if frame[column].isna().any() or frame[column].eq("").any():
-            raise ValueError(f"Column {column} contains empty values")
 
     if team_aliases:
         frame["home_team"] = frame["home_team"].replace(team_aliases)
         frame["away_team"] = frame["away_team"].replace(team_aliases)
 
+    # Drop unplayed rows before validating team names: upstream data lists
+    # scheduled matches whose opponent is still to be determined (empty team,
+    # empty scores), and those must not break a completed-only load.
     missing_home_score = frame["home_goals"].isna()
     missing_away_score = frame["away_goals"].isna()
     partially_scored = missing_home_score ^ missing_away_score
@@ -77,6 +78,10 @@ def validate_matches(
                 "use completed_only=True to exclude them"
             )
         frame = frame.loc[~unplayed].copy()
+
+    for column in ("home_team", "away_team", "competition_type"):
+        if frame[column].isna().any() or frame[column].eq("").any():
+            raise ValueError(f"Column {column} contains empty values")
 
     for column in ("home_goals", "away_goals"):
         numeric = pd.to_numeric(frame[column], errors="raise")

@@ -19,9 +19,9 @@
   },
   "model_version": "elo_poisson_v1",
   "parameters": {
-    "base_log_goal_rate": 0.10755246722097425,
-    "elo_coefficient": 0.7397276611752874,
-    "home_advantage": 0.2305552793948471,
+    "base_log_goal_rate": 0.10751170199616994,
+    "elo_coefficient": 0.7397566822331987,
+    "home_advantage": 0.2305831670469005,
     "time_decay_xi": 0.0006330111237990368
   },
   "ratings": {
@@ -127,7 +127,7 @@
     "Felvid\u00e9k": 1494.3301084440786,
     "Fiji": 1436.247508870274,
     "Finland": 1593.0504800403644,
-    "France": 2221.959890280229,
+    "France": 2179.600428756744,
     "Franconia": 1493.0543322263923,
     "French Guiana": 1444.6111484178894,
     "Fr\u00f8ya": 1264.2174439264475,
@@ -302,7 +302,7 @@
     "South Ossetia": 1487.4172049771855,
     "South Sudan": 1270.2530106602107,
     "South Yemen": 1476.9133146887962,
-    "Spain": 2242.3703826562905,
+    "Spain": 2284.7298441797757,
     "Sri Lanka": 1030.4030079086592,
     "Sudan": 1477.999540647964,
     "Suriname": 1579.6176436935953,
@@ -362,5 +362,5 @@
     "Zimbabwe": 1462.741601408155,
     "\u00c5land Islands": 1482.1288660561731
   },
-  "trained_through": "2026-07-11"
+  "trained_through": "2026-07-14"
 }
