@@ -1,6 +1,6 @@
 team,group_qualify_prob,round_of_32_prob,round_of_16_prob,quarter_final_prob,semi_final_prob,final_prob,champion_prob
-Spain,1.0,1.0,1.0,1.0,1.0,1.0,0.523
-Argentina,1.0,1.0,1.0,1.0,1.0,1.0,0.477
+Spain,1.0,1.0,1.0,1.0,1.0,1.0,0.5305
+Argentina,1.0,1.0,1.0,1.0,1.0,1.0,0.4695
 Czech Republic,0.0,0.0,0.0,0.0,0.0,0.0,0.0
 Mexico,1.0,1.0,1.0,0.0,0.0,0.0,0.0
 Bosnia and Herzegovina,1.0,1.0,0.0,0.0,0.0,0.0,0.0

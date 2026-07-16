@@ -1,8 +1,8 @@
 {
-  "bytes": 29001,
-  "downloaded_at": "2026-07-15T15:13:36.970210+00:00",
+  "bytes": 29050,
+  "downloaded_at": "2026-07-16T15:13:59.406303+00:00",
   "license": "CC0-1.0",
   "output": "data/raw/shootouts.csv",
-  "sha256": "9576c12d5ec5d8d446334443a0f68c94c663e5a56f92e20948313cb47cc36dd8",
+  "sha256": "2acdc95fdad14f5f17200150a1a4a5fa6c2ccf57d31c8b4f61a2c7d9c0493113",
   "source_url": "https://raw.githubusercontent.com/martj42/international_results/master/shootouts.csv"
 }
